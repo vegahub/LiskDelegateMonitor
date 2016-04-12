@@ -157,14 +157,15 @@ forgingstatus := regexreplace(WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq
 if (switch_backup = "yes" AND (InStr(backupnodeurl, "http")))
 	backup_forging_status := regexreplace(WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq.Open("GET",backupnodeurl "/api/delegates/forging/status?publicKey=" delegate_publickey))),".*""enabled"":(.*?)}","$1")
 
-if (switch_backup = "yes" AND (InStr(backupnodeurl, "http")))
-	{
-	Menu, tray, Insert, 4&
-	if (forgingstatus = "true" AND backup_forging_status = "false")
-		Menu, tray, Insert, 5&, Switch Forging to Backup Node, SWITCHTOBACKUP ; Creates a new menu item.
-	if (forgingstatus = "false" AND backup_forging_status = "true")
-			Menu, tray, Insert, 5&, Switch Forging to Main Node, SWITCHTOBACKUP ; Creates a new menu item.
-	}
+if apicallsrun=1
+	if (switch_backup = "yes" AND (InStr(backupnodeurl, "http")))
+		{
+		Menu, tray, Insert, 4&
+		if (forgingstatus = "true" AND backup_forging_status = "false")
+			Menu, tray, Insert, 5&, Switch Forging to Backup Node, SWITCHTOBACKUP ; Creates a new menu item.
+		if (forgingstatus = "false" AND backup_forging_status = "true")
+				Menu, tray, Insert, 5&, Switch Forging to Main Node, SWITCHTOBACKUP ; Creates a new menu item.
+		}
 
 if !forgingstatus	
 	if forgingstatus = %backup_forging_status%
