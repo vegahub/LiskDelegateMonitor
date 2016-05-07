@@ -16,6 +16,11 @@ requirements:
 
 - api access to the delegate node that you want to monitor (config.json, forging:whitelist have to contain your ip, or have to be empty to accept post api calls from anyone)
 
+forging node name background is green
+
+last forge time, block, info
+block Stat
+del stat
 */
 
 ;### some initialisation ###
@@ -55,6 +60,8 @@ if count < 1	; add new param into settings.ini
 		
 ; create an object. this will be used later for API calls. for more about this method: https://msdn.microsoft.com/en-us/library/windows/desktop/aa384106%28v=vs.85%29.aspx		
 WinHttpReq:=ComObjCreate("WinHttp.WinHttpRequest.5.1")	
+
+
 
 ;######## now, check stuff based on settings #########
 
@@ -119,9 +126,9 @@ if count_errors = 10	; server is not reachable after 10 attemps
 count_errors ++
 sleep 1000
 }	
-
 r_delegate_list := WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq.Open("GET",nodeurl "/api/delegates?limit=90")))
 r_delegate_list .= WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq.Open("GET",nodeurl "/api/delegates?offset=89&limit=91")))
+
 if !r_delegate_list	; delegate list empty. shouldn't happen as correct server for API calls were verified previously.
 	Ifnotinstring r_delegate_list, "success":false
 	{
@@ -132,8 +139,9 @@ if !r_delegate_list	; delegate list empty. shouldn't happen as correct server fo
 
 ; find your delegate informations on the delegate list, and put them into vars
 ; error: not listing rank #2
-regex = i){"username":"%delegatename%","address":"(.*?)","publicKey":"(.*?)","vote":(.*?),"producedblocks":(.*?),"missedblocks":(.*?),"virgin":.*?,"rate":(.*?),"productivity":"(.*?)"}
+regex = {"username":"%delegatename%","address":"(.*?)","publicKey":"(.*?)","vote":"(.*?)","producedblocks":"(.*?)","missedblocks":"(.*?)",.*?,"rate":(.*?),.*"productivity":"(.*?)"}
 RegExMatch(r_delegate_list,regex,d)
+
 if r_delegate_list
 	If !d
 		Ifnotinstring r_delegate_list, "success":false
@@ -321,7 +329,6 @@ if my_voterlist_old
 			
 my_voterlist_old := my_voterlist
 my_voterlist :=""
-
 
 delegate_vote_old := delegate_vote
 delegate_producedblocks_old := delegate_producedblocks
