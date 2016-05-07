@@ -139,7 +139,7 @@ if !r_delegate_list	; delegate list empty. shouldn't happen as correct server fo
 
 ; find your delegate informations on the delegate list, and put them into vars
 ; error: not listing rank #2
-regex = {"username":"%delegatename%","address":"(.*?)","publicKey":"(.*?)","vote":"(.*?)","producedblocks":"(.*?)","missedblocks":"(.*?)",.*?,"rate":(.*?),.*"productivity":"(.*?)"}
+regex = {"username":"%delegatename%","address":"(.*?)","publicKey":"(.*?)","vote":"(.*?)","producedblocks":"(.*?)","missedblocks":"(.*?)",.*?"rate":(.*?),.*"productivity":"(.*?)"}
 RegExMatch(r_delegate_list,regex,d)
 
 if r_delegate_list
