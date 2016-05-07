@@ -189,7 +189,7 @@ if (forgingstatus = "false" AND backup_forging_status = "false" AND !(InStr(back
 	if apicallsrun=1
 		msgbox Looks like you are not forging on any of your nodes. Please check if this is true!
 	*/
-amount_forged := round(regexreplace(WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq.Open("GET",nodeurl "/api/delegates/forging/getForgedByAccount?generatorPublicKey=" delegate_publickey))),".*""forged"":(.*?)}","$1") / 100000000,2)
+amount_forged := round(regexreplace(WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq.Open("GET",nodeurl "/api/delegates/forging/getForgedByAccount?generatorPublicKey=" delegate_publickey))),".*""forged"":""(.*?)""}","$1") / 100000000,2)
 
 r_delegate_voters := WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq.Open("GET",nodeurl "/api/delegates/voters?publicKey=" delegate_publickey)))
 r_delegate_voted := WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq.Open("GET",nodeurl "/api/accounts/delegates/?address=" delegate_address)))
@@ -199,7 +199,8 @@ Critical Off
 delegate_vote2:="",count_voters:=""
 loop, parse, r_delegate_voters,{ 	; this is for the info box # votes and all balance voted
 {
-regexmatch(a_loopfield,"balance"":([0-9]+)}",d)
+regexmatch(a_loopfield,"balance"":""([0-9]+)""",d)
+
 if !d
 	continue
 count_voters++
