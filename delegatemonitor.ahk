@@ -7,6 +7,7 @@ https://forum.lisk.io/viewtopic.php?f=25&t=319
 
 Version: v0.1   (2016.04.10)
 Version: v0.2   (2016.04.12)
+Version: v0.2.5   (2016.05.21)
 
 You have to install AutoHotKey to run this script.
 You can find the latest version here: https://autohotkey.com
@@ -74,13 +75,6 @@ If (!delegatename or !nodeurl or !check_server_time or check_server_time < 0 or 
 
 check_server_time *= 1000		; convert check time to milliseconds
 
-if switch_backup = yes
-	if (!backupnodeurl OR !delegatepass) OR !(InStr(backupnodeurl, "http://") or InStr(backupnodeurl, "https://"))
-	 ;should check bckurl and delpass here
-		{
-		msgbox If you want to use the forging switch feature, please make sure that the following information are set in the settings.ini:`n1.The address of your backup node. Use https:// or http:// prefix and :port if needed`n2.You must set your delegate account passhprase, this is needed for forging enable/disable.`n`nAlternatively you can turn of the "switch_backup" option.`nPlease edit the settings.ini and restart the script.
-		}
-
 if SubStr(nodeurl, 0) = "/" ;remove unneeded char if present
 	StringTrimRight, nodeurl, nodeurl, 1
 
@@ -137,9 +131,10 @@ if !r_delegate_list	; delegate list empty. shouldn't happen as correct server fo
 	exitapp
 	}
 
+
 ; find your delegate informations on the delegate list, and put them into vars
-; error: not listing rank #2
-regex = {"username":"%delegatename%","address":"(.*?)","publicKey":"(.*?)","vote":"(.*?)","producedblocks":"(.*?)","missedblocks":"(.*?)",.*?"rate":(.*?),.*"productivity":"(.*?)"}
+
+regex = {"username":"%delegatename%","address":"(.*?)","publicKey":"(.*?)"?,"vote":"?(.*?)"?,"producedblocks":"?(.*?)"?,"missedblocks":"?(.*?)"?,.*?"rate":"?(.*?)"?,"approval":"?(.*?)"?,"productivity":"?(.*?)"?}
 RegExMatch(r_delegate_list,regex,d)
 
 if r_delegate_list
@@ -157,38 +152,15 @@ delegate_vote := Trim(d3)
 delegate_producedblocks := Trim(d4)
 delegate_missedblocks := Trim(d5)
 delegate_rate := Trim(d6)
-delegate_productivity := Trim(d7)
+delegate_approval  := Trim(d7)
+delegate_productivity := Trim(d8)
 delegate_username := delegatename
 
 r_forged := WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq.Open("GET",nodeurl "/api/delegates/forging/getForgedByAccount?generatorPublicKey=" delegate_publickey)))
 forgingstatus := regexreplace(WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq.Open("GET",nodeurl "/api/delegates/forging/status?publicKey=" delegate_publickey))),".*""enabled"":(.*?)}","$1")
-if (switch_backup = "yes" AND (InStr(backupnodeurl, "http")))
-	backup_forging_status := regexreplace(WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq.Open("GET",backupnodeurl "/api/delegates/forging/status?publicKey=" delegate_publickey))),".*""enabled"":(.*?)}","$1")
 
-if apicallsrun=1
-	if (switch_backup = "yes" AND (InStr(backupnodeurl, "http")))
-		{
-		Menu, tray, Insert, 4&
-		if (forgingstatus = "true" AND backup_forging_status = "false")
-			Menu, tray, Insert, 5&, Switch Forging to Backup Node, SWITCHTOBACKUP ; Creates a new menu item.
-		if (forgingstatus = "false" AND backup_forging_status = "true")
-				Menu, tray, Insert, 5&, Switch Forging to Main Node, SWITCHTOBACKUP ; Creates a new menu item.
-		}
 
-if !forgingstatus	
-	if forgingstatus = %backup_forging_status%
-		{
-		msgbox You shouldn't give the same address for main and backup nodes`nPlease change it, and restart the script
-		exitapp
-		}
-		
-if (forgingstatus = "true" AND backup_forging_status = "true")		; both node forging, disable one
-	msgbox You are forging on both of your nodes! You should disable one of them or you are going on a fork.
-/*
-if (forgingstatus = "false" AND backup_forging_status = "false" AND !(InStr(backupnodeurl, "lisk.io")))		; no node forging, enable one
-	if apicallsrun=1
-		msgbox Looks like you are not forging on any of your nodes. Please check if this is true!
-	*/
+
 amount_forged := round(regexreplace(WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq.Open("GET",nodeurl "/api/delegates/forging/getForgedByAccount?generatorPublicKey=" delegate_publickey))),".*""forged"":""(.*?)""}","$1") / 100000000,2)
 
 r_delegate_voters := WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq.Open("GET",nodeurl "/api/delegates/voters?publicKey=" delegate_publickey)))
@@ -210,11 +182,7 @@ delegate_vote2 /= 100000000
 
 
 
-
-If backup_forging_status
-	backup_forging_status_message := "Forging (backup): " backup_forging_status "`n"
-
-info_message = Delegatename: %delegate_username%`nserver: %nodeurl%`nForging: %forgingstatus%`n%backup_forging_status_message%Amount forged: %amount_forged% Lisk`nBlocks Forged: %delegate_producedblocks%`nMissed Blocks:%delegate_missedblocks%`nDelegate uptime: %delegate_productivity%`%`nRank: #%delegate_rate%`nNumber of voters: %count_voters%`nTotal balance voted: %delegate_vote2% Lisk
+info_message = Delegatename: %delegate_username%`nserver: %nodeurl%`nForging: %forgingstatus%`nAmount forged: %amount_forged% Lisk`nBlocks Forged: %delegate_producedblocks%`nMissed Blocks:%delegate_missedblocks%`nDelegate uptime: %delegate_productivity%`%`nRank: #%delegate_rate%`nNumber of voters: %count_voters%`nTotal balance voted: %delegate_vote2% Lisk
 
 if info_message != %info_message_old%
 	{
@@ -270,8 +238,6 @@ if delegate_productivity_old
 		if (notifications = "yes"  AND uptimedecrease = "yes")
 			Notify("Productivity",message,popup_time,notification_style)	
 			
-		if (switch_backup = "yes" AND (InStr(backupnodeurl, "http")))
-			gosub SWITCHTOBACKUP			
 		}
 	
 ; when your rank gone down
@@ -341,56 +307,6 @@ Thread, NoTimers, false
 
 ;Notify("Time", QPX( False ),notification_style)	
 Return
-
-
-
-SWITCHTOBACKUP:	; this gets called if a switch is needed between nodes
-; first change menu
-if (switch_backup = "yes" AND (InStr(backupnodeurl, "http")))
-	{
-	if (forgingstatus = "true" AND backup_forging_status = "false")
-		menu, tray, Rename,Switch Forging to Backup Node,Switch Forging to Main Node
-		
-	if (forgingstatus = "false" AND backup_forging_status = "true")
-		menu, tray, Rename,Switch Forging to Main Node,Switch Forging to Backup Node
-	}
-	
-	
-
-if (forgingstatus = "true" AND backup_forging_status = "false")		; no node forging, enable one
-	{
-	log .= a_now ";API CALL: Disable forging on main node." response := APIPOST(nodeurl "/api/delegates/forging/disable") "`n"
-	if (InStr(response, "address"))		;success
-		log .= a_now ";API CALL: Enable forging on backup node;" response :=APIPOST(backupnodeurl "/api/delegates/forging/enable") "`n"
-			if !(InStr(response, "address"))		;success
-				log .= a_now ";API CALL: Disable forging on main node." response := APIPOST(nodeurl "/api/delegates/forging/enable") "`n"		; switch it back
-	}
-	
-if (forgingstatus = "false" AND backup_forging_status = "true")		; no node forging, enable one
-		{
-		log .= a_now ";API CALL: Disable forging on main node." response := APIPOST(backupnodeurl "/api/delegates/forging/disable") "`n"
-		if (InStr(response, "address"))		;success
-			log .= a_now ";API CALL: Enable forging on backup node;" response := APIPOST(nodeurl "/api/delegates/forging/enable") "`n"
-						if !(InStr(response, "address"))		;success	
-							log .= a_now ";API CALL: Disable forging on main node." response := APIPOST(backupnodeurl "/api/delegates/forging/disable") "`n"
-							
-		}
-	if (InStr(response, "Access denied"))
-		Notify("Switching between Nodes`n(click to close)","Something went wrong.`nMust not have your IP in the whitelist in one of the config.json",100000000,notification_style)
-	If !response
-		Notify("Switching between Nodes`n(click to close)","Something went wrong.`nNo response from server. It's down, or incorrect address",100000000,notification_style)	
-		
-forgingstatus := regexreplace(WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq.Open("GET",nodeurl "/api/delegates/forging/status?publicKey=" delegate_publickey))),".*""enabled"":(.*?)}","$1")
-backup_forging_status := regexreplace(WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq.Open("GET",backupnodeurl "/api/delegates/forging/status?publicKey=" delegate_publickey))),".*""enabled"":(.*?)}","$1")
-
-
-now := a_now
-FormatTime, now, a_now, HH:mm:ss	
-message := "Forging main: " forgingstatus "`nForging backup: " backup_forging_status "`nTime: " now
-Notify("Switched Forging Nodes`n(click to close)",message,100000000,notification_style)
-log .= a_now ";Switched Forging Nodes: " message "`n"
-
-return
 
 
 ; #### just stuff to make editing the script easier (restarts at every save in notepad)
@@ -585,8 +501,8 @@ createmenu:
 ;############### tray menu stuff ###########
 Menu, tray, NoStandard
 
-Menu, tray, add  ; Creates a separator line.
-Menu, tray, add, Delegate Voters List, GETVOTES	; Creates a new menu item.
+;Menu, tray, add  ; Creates a separator line.
+;Menu, tray, add, Delegate Voters List, GETVOTES	; Creates a new menu item.
 Menu, tray, add, Show Delegate Info, GETINFO ; Creates a new menu item.
 Menu, tray, add  ; Creates a separator line.
 Menu, tray, add, Pause Delegate Monitor, pause ; Creates a new menu item.
@@ -594,8 +510,6 @@ Menu, tray, add, Reload/Restart Delegate Monitor, reload ; Creates a new menu it
 Menu, tray, add
 Menu, tray, add, Exit Delegate Monitor, onexit ; Creates a new menu item.
 return
-
-
 
 
 pause:
@@ -635,8 +549,7 @@ defaultf =
 /*
 Notes: 
 - if you make any changes to this file, you have to reload the script. Will automate later
-- If you want the use the backup switch feature (switching nodes when there is a problem on the one you are forging on) you have to provide your account passphrase. This needs to be sent to the node to disable/enable forging remotely. This should only be done using SSL or your passhprase being transmited without encyption.
-- You also have to put your IP into config.json, forging:whitelist, or have to be empty. If it's empty any active delegate can enable forging on your node.
+- You may want to put your IP into config.json, forging:whitelist, or have to be empty. If it's empty any active delegate can enable forging on your node.
 */
 
 ;########################################
@@ -645,11 +558,6 @@ Notes:
 check_server_time := "30"	;in seconds. how often the script check your node for new data? If 0, there is no monitoring
 nodeurl := ""			; domain or ip address with http(s) prefix - use https if you can! Add port if needed. e.g.: https://login.lisk.io or http://83.136.249.126:7000
 delegatename := "" 	 ;	your delegate username
-
-;### Only need to set these if you want to use switch to backup feature #######
-switch_backup := "no"			; if yes it will switch forging to backup server
-backupnodeurl := ""					; ip address for your backup server
-delegatepass := "" 	; your delegte account passphrase. only needed for backup server failover
 
 ;########################################
 ;#####  Options that you may set   ######
