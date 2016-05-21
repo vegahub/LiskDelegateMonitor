@@ -1,6 +1,15 @@
 # LiskDelegateMonitor
 AHK script to remotely monitor your Lisk Delegate node.
 
+Changelog:
+v0.2.5
+ - Fixes regex for changed API responses
+ - Removed voting list generation
+ - Removed backup switching
+ 
+Notes for update:
+The list generations was broken because of various Lisk API changes, I won't fix (and continue to maintain it for future changes), there are much better online tools now for this
+I also removed the backup switching as it was in beta, and not really useful. I'm working on log monitoring tool that will have better backup switching capability.
 
 Description
 
