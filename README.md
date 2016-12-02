@@ -41,5 +41,4 @@ Alternatively you can download delegatemonitor.exe and run it without any depend
 
 After the first start a settings.ini will be generated. Please edit this file and add your own settings.
 
-![Alt text](http://i.imgur.com/7tn3kcO.png "Screenshot")
-	
+![Alt text]((http://i.imgur.com/lRyh5Ao.png "Screenshot")
