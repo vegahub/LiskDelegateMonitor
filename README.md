@@ -2,6 +2,23 @@
 AHK script to remotely monitor your Lisk Delegate node.
 
 Changelog:
+v1.0
+This version will show:
+
+- Your basic delegate information
+- Your nodes current height and if they have forging enabled (Letters (F)orging (N)ot forging or (U)unknown beside your node names)
+- Height consensus on the network. It's a good indicatior if a node of yours is experiencing a problem
+- A message if one of your nodes is behind on block (optional)
+- A sound file can also be played on this event (optional)
+- It can be set that this only happens if the forging node is behind
+
+
+Notes for update:
+Removed event notification.
+Simplified settings.ini.
+Cleaned up the code, should be final version (other than bug fixes)
+A more advanced version of this tool will be developed with the name of "Lisk Node Monitor"
+
 v0.2.5
  - Fixes regex for changed API responses
  - Removed voting list generation
