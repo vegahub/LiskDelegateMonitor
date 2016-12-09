@@ -9,6 +9,7 @@ Version: v0.1   (2016.04.10)
 Version: v0.2   (2016.04.12)
 Version: v0.2.5 (2016.05.21)
 Version: v1   	(2016.11.30)
+Version: v1.1   (2016.12.09) - fix for lisk 0.5.1
 
 v1 is the final version not counting bug fixes.
 Development will continue in Lisk Node Monitor, coming soon.
@@ -189,7 +190,7 @@ gui_message := "Your Own Nodes`n---------------------`n"
 loop % nodeurl_count
 {
 apiresponse := WinHttpReq.ResponseText(WinHttpReq.Send(WinHttpReq.Open("GET",nodeurl%a_index% "/api/loader/status/sync")))
-RegExMatch(apiresponse,"{""success"":(.*?),""syncing"":(.*?),""blocks"":(.*?),""height"":(.*?)}",d)
+RegExMatch(apiresponse,"{""success"":(.*?),""syncing"":(.*?),""blocks"":(.*?),""height"":(.*?),""broadhash"":""(.*?)"",""consensus"":(.*?)}",d)
 ; later othen info than height can be added
 if d3 != 0
 	gui_message .= d3 " | "

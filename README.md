@@ -40,6 +40,3 @@ You'll need Notify.ahk in the same folder. It's included here or you can downloa
 Alternatively you can download delegatemonitor.exe and run it without any dependencies.
 
 After the first start a settings.ini will be generated. Please edit this file and add your own settings.
-
-![Alt text](http://i.imgur.com/7tn3kcO.png "Screenshot")
-	
